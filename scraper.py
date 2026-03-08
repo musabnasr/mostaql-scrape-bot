@@ -60,6 +60,11 @@ MOBILE_KEYWORDS = [
     "react native",
     # Other mobile frameworks
     "kotlin",
+    "كوتلن",
+    "java",
+    "جافا",
+    "dart",
+    "دارت",
     "xamarin",
 ]
 
@@ -106,7 +111,7 @@ def fetch_projects(session: requests.Session) -> list:
     return projects
 
 
-def _parse_project_row(row) -> dict:
+def _parse_project_row(row) -> dict | None:
     try:
         # Project URL & ID — URLs are absolute: https://mostaql.com/project/1219203-slug
         title_tag = row.find("a", href=re.compile(r"/project/\d+"))
