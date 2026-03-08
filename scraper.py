@@ -36,13 +36,14 @@ HEADERS = {
 
 # ── Arabic + English mobile keywords ─────────────────────────────────────────
 MOBILE_KEYWORDS = [
-    # Mobile (Arabic)
+    # Mobile app (Arabic) — specific phrases only, not bare "موبايل"
     "تطبيق موبايل",
     "تطبيق جوال",
     "تطبيق للجوال",
     "تطبيق للموبايل",
-    "موبايل",
-    "جوال",
+    "تطبيق الجوال",
+    "تطبيق الموبايل",
+    "app موبايل",
     # Android (Arabic + English)
     "أندرويد",
     "اندرويد",
@@ -55,13 +56,10 @@ MOBILE_KEYWORDS = [
     "آيفون",
     "ايفون",
     "ايوس",
-    # React Native (Arabic + English)
+    # React Native
     "react native",
-    "ريأكت نيتف",
-    "ريأكت نيتيف",
-    # Other frameworks
+    # Other mobile frameworks
     "kotlin",
-    "swift",
     "xamarin",
 ]
 
