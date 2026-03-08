@@ -110,15 +110,14 @@ def fetch_projects(session: requests.Session) -> list:
 
 def _parse_project_row(row) -> dict:
     try:
-        # Project URL & ID
-        title_tag = row.find("a", href=re.compile(r"/projects/\d+"))
+        # Project URL & ID — URLs are absolute: https://mostaql.com/project/1219203-slug
+        title_tag = row.find("a", href=re.compile(r"/project/\d+"))
         if not title_tag:
             return None
 
-        href = title_tag["href"].split("?")[0]
-        url = "https://mostaql.com" + href if href.startswith("/") else href
+        url = title_tag["href"].split("?")[0]
 
-        match = re.search(r"/projects/(\d+)", url)
+        match = re.search(r"/project/(\d+)", url)
         if not match:
             return None
         project_id = match.group(1)
@@ -126,34 +125,29 @@ def _parse_project_row(row) -> dict:
         # Title
         title = title_tag.get_text(strip=True)
 
-        # Description snippet
-        desc_tag = (
-            row.find(class_=re.compile(r"desc|detail|snippet|brief", re.I))
-            or row.find("p")
-        )
-        description = desc_tag.get_text(strip=True)[:200] if desc_tag else ""
+        # Description — inside <p class="project__brief"> → <a class="details-url">
+        brief_tag = row.find("p", class_=re.compile(r"project__brief", re.I))
+        if brief_tag:
+            inner_a = brief_tag.find("a")
+            description = (inner_a or brief_tag).get_text(strip=True)[:300]
+        else:
+            description = ""
 
-        # Budget
-        budget_tag = (
-            row.find(class_=re.compile(r"budget|price|amount", re.I))
-            or row.find("td", attrs={"data-label": re.compile(r"budget|ميزان|ميزانية", re.I)})
-        )
-        budget = budget_tag.get_text(strip=True) if budget_tag else "غير محدد"
-
-        # Bids count
-        bids_tag = (
-            row.find(class_=re.compile(r"bid|offer|proposal", re.I))
-            or row.find("td", attrs={"data-label": re.compile(r"bid|عرض|offer", re.I)})
-        )
-        bids_raw = bids_tag.get_text(strip=True) if bids_tag else "0"
-        bids_digits = re.sub(r"[^\d]", "", bids_raw)
-        bids = bids_digits if bids_digits else bids_raw
+        # Bids — 3rd <li class="text-muted"> in <ul class="project__meta">
+        # Text looks like "14 عرض" or "8 عروض"
+        meta_ul = row.find("ul", class_=re.compile(r"project__meta", re.I))
+        bids = "0"
+        if meta_ul:
+            lis = meta_ul.find_all("li")
+            if len(lis) >= 3:
+                bids_text = lis[2].get_text(strip=True)
+                bids_match = re.search(r"\d+", bids_text)
+                bids = bids_match.group() if bids_match else "0"
 
         return {
             "id": project_id,
             "title": title,
             "description": description,
-            "budget": budget,
             "bids": bids,
             "url": url,
         }
@@ -177,7 +171,6 @@ def send_telegram(project: dict) -> bool:
     text = (
         f"🆕 مشروع جديد على مستقل\n\n"
         f"📌 العنوان: {project['title']}\n"
-        f"💰 الميزانية: {project['budget']}\n"
         f"🏷️ عدد العروض: {project['bids']}\n"
         f"📝 {project['description']}\n"
         f"🔗 {project['url']}"
