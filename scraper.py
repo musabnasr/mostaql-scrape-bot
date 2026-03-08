@@ -36,6 +36,8 @@ HEADERS = {
 
 # ── Arabic + English mobile keywords ─────────────────────────────────────────
 MOBILE_KEYWORDS = [
+    # Generic app (Arabic) — note: may also match web apps
+    "تطبيق",
     # Mobile app (Arabic) — specific phrases only, not bare "موبايل"
     "تطبيق موبايل",
     "تطبيق جوال",
